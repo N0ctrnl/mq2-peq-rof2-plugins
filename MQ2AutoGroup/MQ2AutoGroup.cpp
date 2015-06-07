@@ -9,22 +9,30 @@ int CurrentMaxNames = 0;
 int TotalNames = 0;
 int MAXLIST = 20;
 char Name[100][64];
-#define COLOR_NAME "\ay" 
-#define COLOR_NAME_TEST "\ag" 
-#define COLOR_NAME_BRACKET "\ar" 
+#define COLOR_YELLOW "\ay" 
+#define COLOR_GREEN "\ag" 
+#define COLOR_RED "\ar" 
 #define COLOR_OFF "\ax" 
 
+void WriteChatColor(string s)
+{
+	char *cstr = new char[s.length() + 1];
+	std::strcpy(cstr, s.c_str());
+	WriteChatColor(cstr);
+	delete cstr;
+}
 
 //Show help 
 VOID ShowHelp(VOID)
 {
-	WriteChatf("\ar+++ AutoGroup - Usage +++\ax");
-	WriteChatf("Status Autogroup is Currently: %s", AutoGroupOn ? "\agOn" : "\arOff");
-	WriteChatColor("/AutoGroup < \ayCharName\ax > This will add a Character name to the AutoGroup.ini that you will auto accept invites from.");
+	string on = COLOR_GREEN "on" COLOR_OFF;
+	string off = COLOR_RED "off" COLOR_OFF;
+	WriteChatColor(COLOR_RED "+++ AutoGroup - Usage +++" COLOR_OFF);
+	WriteChatColor("Autogroup is Currently: " + (AutoGroupOn ? on : off));
+	WriteChatColor("/AutoGroup " COLOR_YELLOW "CharName" COLOR_OFF ": This will add a Character name to the AutoGroup.ini that you will auto accept invites from.");
 	//    WriteChatColor("/AutoGroup < Guild > Guildies on/off"); 
-	WriteChatColor("/AutoGroup < \agOn\ax >  Auto group on!");
-	WriteChatColor("/AutoGroup < \arOff\ax >  Auto group off!");
-
+	WriteChatColor("/AutoGroup " + on + ": Auto group on!");
+	WriteChatColor("/AutoGroup " + off + ": Auto group off!");
 	return;
 }
 

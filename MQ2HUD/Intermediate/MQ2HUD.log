@@ -1,0 +1,21 @@
+﻿Build started 6/3/2015 11:51:29 PM.
+     1>Project "C:\Users\Sam\Desktop\MQ2-PEQ-RoF2-cpp\MQ2HUD\MQ2HUD.vcxproj" on node 5 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /Zi /nologo /W3 /WX- /O2 /Ob1 /Oy- /D CINTERFACE /D _WINDLL /D _MBCS /GF /Gm- /EHsc /MT /Zp1 /GS- /Gy- /fp:precise /Zc:wchar_t /Zc:forScope /Fo".\Intermediate\\" /Fd".\Intermediate\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt /DCINTERFACE  MQ2HUD.cpp
+         MQ2HUD.cpp
+         EQLIB_IMPORTS
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"..\Release\MQ2HUD.dll" /INCREMENTAL:NO /LIBPATH:..\Detours\lib /LIBPATH:..\Release wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"..\Release\MQ2HUD.pdb" /MAP /MAPINFO:EXPORTS /SUBSYSTEM:WINDOWS /OPT:NOREF /OPT:NOICF /TLBID:1 /BASE:"0x04000000" /DYNAMICBASE /NXCOMPAT /IMPLIB:"..\Release\MQ2HUD.lib" /MACHINE:X86 /SAFESEH /OPT:NOICF /DLL .\Intermediate\MQ2HUD.obj
+         "C:\Users\Sam\Desktop\MQ2-PEQ-RoF2-cpp\Release\MQ2Main.lib"
+         Microsoft (R) Incremental Linker Version 12.00.31101.0
+         Copyright (C) Microsoft Corporation.  All rights reserved.
+         
+         "/OUT:..\Release\MQ2HUD.dll" /INCREMENTAL:NO /LIBPATH:..\Detours\lib /LIBPATH:..\Release wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST "/MANIFESTUAC:level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG "/PDB:..\Release\MQ2HUD.pdb" /MAP /MAPINFO:EXPORTS /SUBSYSTEM:WINDOWS /OPT:NOREF /OPT:NOICF /TLBID:1 "/BASE:0x04000000" /DYNAMICBASE /NXCOMPAT "/IMPLIB:..\Release\MQ2HUD.lib" /MACHINE:X86 /SAFESEH /OPT:NOICF /DLL .\Intermediate\MQ2HUD.obj 
+         "C:\Users\Sam\Desktop\MQ2-PEQ-RoF2-cpp\Release\MQ2Main.lib" 
+            Creating library ..\Release\MQ2HUD.lib and object ..\Release\MQ2HUD.exp
+         MQ2HUD.vcxproj -> C:\Users\Sam\Desktop\MQ2-PEQ-RoF2-cpp\MQ2HUD\..\Release\MQ2HUD.dll
+     1>Done Building Project "C:\Users\Sam\Desktop\MQ2-PEQ-RoF2-cpp\MQ2HUD\MQ2HUD.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:01.56

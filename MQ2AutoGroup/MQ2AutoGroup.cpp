@@ -1,126 +1,161 @@
-// MQ2AutoGroup.cpp : Defines the entry point for the DLL application.
-//
-
-// PLUGIN_API is only to be used for callbacks.  All existing callbacks at this time
-// are shown below. Remove the ones your plugin does not use.  Always use Initialize
-// and Shutdown for setup and cleanup, do NOT do it in DllMain.
-
-
-
-#include "../MQ2Plugin.h"
-
+#include "../MQ2Plugin.h" 
 
 PreSetup("MQ2AutoGroup");
 
-// Called once, when the plugin is to initialize
-PLUGIN_API VOID InitializePlugin(VOID)
-{
-    DebugSpewAlways("Initializing MQ2AutoGroup");
+//Setup stuff 
+bool AutoGroupOn = true;
+//bool AutoGroupGuild = true; 
+int CurrentMaxNames = 0;
+int TotalNames = 0;
+int MAXLIST = 20;
+char Name[100][64];
+#define COLOR_NAME "\ay" 
+#define COLOR_NAME_TEST "\ag" 
+#define COLOR_NAME_BRACKET "\ar" 
+#define COLOR_OFF "\ax" 
 
-    //Add commands, MQ2Data items, hooks, etc.
-    //AddCommand("/mycommand",MyCommand);
-    //AddXMLFile("MQUI_MyXMLFile.xml");
-    //bmMyBenchmark=AddMQ2Benchmark("My Benchmark Name");
+
+//Show help 
+VOID ShowHelp(VOID)
+{
+	WriteChatf("\ar+++ AutoGroup - Usage +++\ax");
+	WriteChatf("Status Autogroup is Currently: %s", AutoGroupOn ? "\agOn" : "\arOff");
+	WriteChatColor("/AutoGroup < \ayCharName\ax > This will add a Character name to the AutoGroup.ini that you will auto accept invites from.");
+	//    WriteChatColor("/AutoGroup < Guild > Guildies on/off"); 
+	WriteChatColor("/AutoGroup < \agOn\ax >  Auto group on!");
+	WriteChatColor("/AutoGroup < \arOff\ax >  Auto group off!");
+
+	return;
 }
 
-// Called once, when the plugin is to shutdown
-PLUGIN_API VOID ShutdownPlugin(VOID)
+//Write ini if there is none 
+VOID WriteINI(VOID)
 {
-    DebugSpewAlways("Shutting down MQ2AutoGroup");
-
-    //Remove commands, MQ2Data items, hooks, etc.
-    //RemoveMQ2Benchmark(bmMyBenchmark);
-    //RemoveCommand("/mycommand");
-    //RemoveXMLFile("MQUI_MyXMLFile.xml");
+	WritePrivateProfileString("Settings", "AutoGroup", "on", INIFileName);
+	ShowHelp();
+	//   WritePrivateProfileString("Settings","AutoGroupGuild","off",INIFileName); 
+	//   WritePrivateProfileString("Names","Name1","Nada",INIFileName); 
 }
 
-// Called after entering a new zone
-PLUGIN_API VOID OnZoned(VOID)
+//Load ini when player enters game 
+VOID LoadINI(VOID)
 {
-    DebugSpewAlways("MQ2AutoGroup::OnZoned()");
+	char szTemp[MAX_STRING];
+	TotalNames = 0;
+	if (GetPrivateProfileString("Settings", "AutoGroup", "", szTemp, MAX_STRING, INIFileName))
+	{
+		if (!strcmp(szTemp, "on"))
+			AutoGroupOn = true;
+		else
+			AutoGroupOn = false;
+	}
+	else
+		WriteINI();
+	//   if(GetPrivateProfileString("Settings","AutoGroupGuild","",szTemp,MAX_STRING,INIFileName)) 
+	//   { 
+	//      if (!strcmp(szTemp,"on")) 
+	//         AutoGroupGuild = true; 
+	//      else 
+	//         AutoGroupGuild = false; 
+	//   } 
+	for (int i = 0; i<(MAXLIST + 1); i++)
+	{
+		sprintf(szTemp, "Name%i", i);
+		if (!GetPrivateProfileString("Names", szTemp, "", Name[i], 64, INIFileName))
+			return;
+		else
+			TotalNames++;
+	}
 }
 
-// Called once directly before shutdown of the new ui system, and also
-// every time the game calls CDisplay::CleanGameUI()
-PLUGIN_API VOID OnCleanUI(VOID)
+VOID DoAutoGroupOn(PSPAWNINFO pChar, PCHAR szLine)
 {
-    DebugSpewAlways("MQ2AutoGroup::OnCleanUI()");
-    // destroy custom windows, etc
+	char szTemp[MAX_STRING];
+	if (gGameState == GAMESTATE_INGAME)
+	{
+		if (szLine[0] == 0)
+		{
+			//         WriteChatf("AutoGroup is now: %s", AutoGroupOn?"\agOn":"\arOff"); 
+			//         WriteChatf("AutoGroupGuild is now: %s", AutoGroupGuild?"\agOn":"\arOff"); 
+			ShowHelp();
+			return;
+		}
+		if (!strcmpi(szLine, "on"))
+			AutoGroupOn = true;
+		else if (!strcmpi(szLine, "off"))
+			AutoGroupOn = false;
+		//      else if (!strcmpi(szLine,"guild")) 
+		//         AutoGroupGuild=!AutoGroupGuild; 
+		else
+		{
+			WriteChatf("Adding \ay< %s >\ax to list of people you'll auto-join", szLine);
+			sprintf(szTemp, "Name%i", TotalNames);
+			WritePrivateProfileString("Names", szTemp, szLine, INIFileName);
+			TotalNames++;
+			LoadINI();
+			return;
+		}
+		WriteChatf("AutoGroup is now: %s", AutoGroupOn ? "\agOn" : "\arOff");
+		//      WriteChatf("AutoGroupGuild is now: %s", AutoGroupGuild?"\agOn":"\arOff"); 
+		LoadINI();
+	}
 }
 
-// Called once directly after the game ui is reloaded, after issuing /loadskin
-PLUGIN_API VOID OnReloadUI(VOID)
+BOOL CheckNames(PCHAR szName)
 {
-    DebugSpewAlways("MQ2AutoGroup::OnReloadUI()");
-    // recreate custom windows, etc
+	//   bool CheckGuild = false; 
+	//   PCHARINFO pChar=GetCharInfo(); 
+	//   PSPAWNINFO pSpawn = (PSPAWNINFO)pSpawnList; 
+	//   while (pSpawn) 
+	//   { 
+	//      if ((pChar->GuildID == pSpawn->GuildID) && (!strcmpi(szName,pSpawn->Name)) && (AutoGroupGuild)) 
+	//         return true; 
+	//         pSpawn = pSpawn->Next; 
+	//   } 
+
+	for (int i = 0; i<(TotalNames + 1); i++)
+	{
+		if (!strcmpi(szName, Name[i]))
+			return true;
+	}
+	return false;
 }
 
-// Called every frame that the "HUD" is drawn -- e.g. net status / packet loss bar
-PLUGIN_API VOID OnDrawHUD(VOID)
-{
-    // DONT leave in this debugspew, even if you leave in all the others
-    //DebugSpewAlways("MQ2AutoGroup::OnDrawHUD()");
-}
-
-// Called once directly after initialization, and then every time the gamestate changes
-PLUGIN_API VOID SetGameState(DWORD GameState)
-{
-    DebugSpewAlways("MQ2AutoGroup::SetGameState()");
-    //if (GameState==GAMESTATE_INGAME)
-    // create custom windows if theyre not set up, etc
-}
-
-
-// This is called every time MQ pulses
-PLUGIN_API VOID OnPulse(VOID)
-{
-    // DONT leave in this debugspew, even if you leave in all the others
-    //DebugSpewAlways("MQ2AutoGroup::OnPulse()");
-}
-
-// This is called every time WriteChatColor is called by MQ2Main or any plugin,
-// IGNORING FILTERS, IF YOU NEED THEM MAKE SURE TO IMPLEMENT THEM. IF YOU DONT
-// CALL CEverQuest::dsp_chat MAKE SURE TO IMPLEMENT EVENTS HERE (for chat plugins)
-PLUGIN_API DWORD OnWriteChatColor(PCHAR Line, DWORD Color, DWORD Filter)
-{
-    DebugSpewAlways("MQ2AutoGroup::OnWriteChatColor(%s)",Line);
-    return 0;
-}
-
-// This is called every time EQ shows a line of chat with CEverQuest::dsp_chat,
-// but after MQ filters and chat events are taken care of.
 PLUGIN_API DWORD OnIncomingChat(PCHAR Line, DWORD Color)
 {
-    DebugSpewAlways("MQ2AutoGroup::OnIncomingChat(%s)",Line);
-    return 0;
+	CHAR szName[MAX_STRING];
+	CHAR szMsg[MAX_STRING];
+	if (strstr(Line, "invites you to join a group.")) {
+		GetArg(szName, Line, 1);
+		if (CheckNames(szName)) {
+			DoCommand(GetCharInfo()->pSpawn, "/timed 3s /keypress invite_follow");
+			sprintf(szMsg, "Accepted group invite from \ay< %s >\ax", szName);
+			WriteChatColor(szMsg);
+		}
+	}
+	if (strstr(Line, "invites you to join a raid")) {
+		GetArg(szName, Line, 1);
+		if (CheckNames(szName)) {
+			DoCommand(GetCharInfo()->pSpawn, "/timed 3s /raidaccept");
+			sprintf(szMsg, "Accepted raid invite from \ay< %s >\ax", szName);
+			WriteChatColor(szMsg);
+		}
+	}
+	return 0;
 }
 
-// This is called each time a spawn is added to a zone (inserted into EQ's list of spawns),
-// or for each existing spawn when a plugin first initializes
-// NOTE: When you zone, these will come BEFORE OnZoned
-PLUGIN_API VOID OnAddSpawn(PSPAWNINFO pNewSpawn)
+
+// Called once, when the plugin is to initialize 
+PLUGIN_API VOID InitializePlugin(VOID)
 {
-    DebugSpewAlways("MQ2AutoGroup::OnAddSpawn(%s)",pNewSpawn->Name);
+	DebugSpewAlways("Initializing MQ2AutoGroup");
+	LoadINI();
+	AddCommand("/autogroup", DoAutoGroupOn);
 }
 
-// This is called each time a spawn is removed from a zone (removed from EQ's list of spawns).
-// It is NOT called for each existing spawn when a plugin shuts down.
-PLUGIN_API VOID OnRemoveSpawn(PSPAWNINFO pSpawn)
+// Called once, when the plugin is to shutdown 
+PLUGIN_API VOID ShutdownPlugin(VOID)
 {
-    DebugSpewAlways("MQ2AutoGroup::OnRemoveSpawn(%s)",pSpawn->Name);
-}
-
-// This is called each time a ground item is added to a zone
-// or for each existing ground item when a plugin first initializes
-// NOTE: When you zone, these will come BEFORE OnZoned
-PLUGIN_API VOID OnAddGroundItem(PGROUNDITEM pNewGroundItem)
-{
-    DebugSpewAlways("MQ2AutoGroup::OnAddGroundItem(%d)",pNewGroundItem->DropID);
-}
-
-// This is called each time a ground item is removed from a zone
-// It is NOT called for each existing ground item when a plugin shuts down.
-PLUGIN_API VOID OnRemoveGroundItem(PGROUNDITEM pGroundItem)
-{
-    DebugSpewAlways("MQ2AutoGroup::OnRemoveGroundItem(%d)",pGroundItem->DropID);
+	DebugSpewAlways("Shutting down MQ2AutoGroup");
+	RemoveCommand("/autogroup");
 }

@@ -1,10 +1,12 @@
 #include "../MQ2Plugin.h" 
 
+#include <sstream>
+
 PreSetup("MQ2AutoGroup");
 
 //Setup stuff 
 bool AutoGroupOn = true;
-//bool AutoGroupGuild = true; 
+bool AutoGroupGuild = true; 
 int CurrentMaxNames = 0;
 int TotalNames = 0;
 int MAXLIST = 20;
@@ -20,6 +22,11 @@ void WriteChatColor(string s)
 	std::strcpy(cstr, s.c_str());
 	WriteChatColor(cstr);
 	delete cstr;
+}
+
+void WriteChatColor(ostringstream &oss)
+{
+	WriteChatColor(oss.str());
 }
 
 //Show help 
@@ -40,8 +47,8 @@ VOID ShowHelp(VOID)
 VOID WriteINI(VOID)
 {
 	WritePrivateProfileString("Settings", "AutoGroup", "on", INIFileName);
+	WritePrivateProfileString("Settings", "AutoGroupGuild", "on", INIFileName);
 	ShowHelp();
-	//   WritePrivateProfileString("Settings","AutoGroupGuild","off",INIFileName); 
 	//   WritePrivateProfileString("Names","Name1","Nada",INIFileName); 
 }
 
@@ -59,13 +66,13 @@ VOID LoadINI(VOID)
 	}
 	else
 		WriteINI();
-	//   if(GetPrivateProfileString("Settings","AutoGroupGuild","",szTemp,MAX_STRING,INIFileName)) 
-	//   { 
-	//      if (!strcmp(szTemp,"on")) 
-	//         AutoGroupGuild = true; 
-	//      else 
-	//         AutoGroupGuild = false; 
-	//   } 
+	if(GetPrivateProfileString("Settings","AutoGroupGuild","",szTemp,MAX_STRING,INIFileName)) 
+	{ 
+	   if (!strcmp(szTemp,"on")) 
+	      AutoGroupGuild = true;
+	   else 
+	      AutoGroupGuild = false; 
+	} 
 	for (int i = 0; i<(MAXLIST + 1); i++)
 	{
 		sprintf(szTemp, "Name%i", i);
@@ -109,21 +116,22 @@ VOID DoAutoGroupOn(PSPAWNINFO pChar, PCHAR szLine)
 	}
 }
 
-BOOL CheckNames(PCHAR szName)
+BOOL CheckNames(char *inviterName)
 {
-	//   bool CheckGuild = false; 
-	//   PCHARINFO pChar=GetCharInfo(); 
-	//   PSPAWNINFO pSpawn = (PSPAWNINFO)pSpawnList; 
-	//   while (pSpawn) 
-	//   { 
-	//      if ((pChar->GuildID == pSpawn->GuildID) && (!strcmpi(szName,pSpawn->Name)) && (AutoGroupGuild)) 
-	//         return true; 
-	//         pSpawn = pSpawn->Next; 
-	//   } 
+	if (AutoGroupGuild) {
+		int myGuild = GetCharInfo()->GuildID;
+		EQClasses::EQPlayer *inviter = pSpawnManager->GetSpawnByName(inviterName);
+		if (inviter != NULL) {
+			int inviterGuild = inviter->Data.GuildID;
+			if (myGuild == inviterGuild) {
+				return true;
+			}
+		}
+	}
 
 	for (int i = 0; i<(TotalNames + 1); i++)
 	{
-		if (!strcmpi(szName, Name[i]))
+		if (!strcmpi(inviterName, Name[i]))
 			return true;
 	}
 	return false;
